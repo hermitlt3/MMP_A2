@@ -9,7 +9,7 @@
 class hgeSprite;
 class hgeFont;
 
-//#define INTERPOLATEMOVEMENT 
+#define INTERPOLATEMOVEMENT 
 #define EXTRAPOLATEMOVEMENT
 
 /**
@@ -38,7 +38,15 @@ class Ship
 	// Lab 13 Task 2 : add for interpolation
 #ifdef INTERPOLATEMOVEMENT
 	// step 1 : add new variables
-	
+	float server_x_;
+	float server_y_;
+	float server_w_;
+	float client_x_;
+	float client_y_;
+	float client_w_;
+	float server_velx_;
+	float server_vely_;
+	float ratio_;
 #endif
 
 	unsigned int id;
@@ -109,7 +117,27 @@ public:
 	// Lab 13 Task 2 : Interpolation
 #ifdef INTERPOLATEMOVEMENT
 	// step 2: add new member functions here
-	
+	void SetServerLocation(float x, float y, float w) {
+		server_x_ = x;
+		server_y_ = y;
+		server_w_ = w;
+	}
+	void SetServerVelocityX(float velocity) { server_velx_ = velocity; }
+	void SetServerVelocityY(float velocity) { server_vely_ = velocity; }
+	float GetServerVelocityX() { return server_velx_; }
+	float GetServerVelocityY() { return server_vely_; }
+	float GetServerX() { return server_x_; }
+	float GetServerY() { return server_y_; }
+	float GetServerW() { return server_w_; }
+	void DoInterpolateUpdate()
+	{
+		client_x_ = x_;
+		client_y_ = y_;
+		client_w_ = w_;
+		velocity_x_ = server_velx_;
+		velocity_y_ = server_vely_;
+		ratio_ = 0;
+	}
 #endif
 
 };

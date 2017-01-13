@@ -31,14 +31,19 @@ Ship::Ship(int type, float locx_, float locy_)
 ,	collidetimer(0)
 #ifdef INTERPOLATEMOVEMENT
 // step 3 : add new initializations
-
+, server_w_(0)
+, client_w_(0)
+, server_velx_(0)
+, server_vely_(0)
+, ratio_(1)
 #endif
 {
 
 	std::cout << "Creating Ship " << type << " " << locx_ << " " << locy_ << std::endl;
 #ifdef INTERPOLATEMOVEMENT
 	// step 4: At first, set all server & client variables to the same 
-
+	x_ = server_x_ = client_x_ = locx_;
+	y_ = server_y_ = client_y_ = locy_;
 #else
 	x_ = locx_;
 	y_ = locy_;
@@ -105,7 +110,17 @@ void Ship::Update(float timedelta)
 
 #ifdef INTERPOLATEMOVEMENT
 	// step 5 : change the way angular velocity is updated (by ratio)
-	
+	server_w_ += angular_velocity * timedelta;
+	if (server_w_ > pi)
+		server_w_ -= pi;
+	if (server_w_ < 0.0f)
+		server_w_ += pi;
+	client_w_ += angular_velocity * timedelta;
+	if (client_w_ > pi)
+		client_w_ -= pi;
+	if (client_w_ < 0.0f)
+		client_w_ += pi;
+	w_ = ratio_ * server_w_ + (1 - ratio_) * client_w_;
 #else
 
 	w_ += angular_velocity * timedelta;
@@ -130,7 +145,35 @@ void Ship::Update(float timedelta)
 	// Lab 13 Task 2 : Add new motion changes for Interpolation
 #ifdef INTERPOLATEMOVEMENT
 	// step 6 : change the way movement is updated by using ratio.
-	
+	server_x_ += server_velx_ * timedelta;
+	server_y_ += server_vely_ * timedelta;
+	if (server_x_ < -spritewidth / 2)
+		server_x_ += screenwidth + spritewidth;
+	else if (server_x_ > screenwidth + spritewidth / 2)
+		server_x_ -= screenwidth + spritewidth;
+	if (server_y_ < -spriteheight / 2)
+		server_y_ += screenheight + spriteheight;
+	else if (server_y_ > screenheight + spriteheight / 2)
+		server_y_ -= screenheight + spriteheight;
+	client_x_ += velocity_x_ * timedelta;
+	client_y_ += velocity_y_ * timedelta;
+	if (client_x_ < -spritewidth / 2)
+		client_x_ += screenwidth + spritewidth;
+	else if (client_x_ > screenwidth + spritewidth / 2)
+		client_x_ -= screenwidth + spritewidth;
+	if (client_y_ < -spriteheight / 2)
+		client_y_ += screenheight + spriteheight;
+	else if (client_y_ > screenheight + spriteheight / 2)
+		client_y_ -= screenheight + spriteheight;
+	x_ = ratio_ * server_x_ + (1 - ratio_) * client_x_;
+	y_ = ratio_ * server_y_ + (1 - ratio_) * client_y_;
+	if (ratio_ < 1)
+	{
+		// interpolating ratio step
+		ratio_ += timedelta * 4;
+		if (ratio_ > 1)
+			ratio_ = 1;
+	}
 #else
 	x_ += velocity_x_ * timedelta;
 	y_ += velocity_y_ * timedelta;
@@ -178,7 +221,8 @@ void Ship::Accelerate(float acceleration, float timedelta)
 	// Lab 13 Task 2 : Changes for interpolation
 #ifdef INTERPOLATEMOVEMENT
 	// step 7 : change the way acceleration is done. Sets to server_velx_ instead
-	
+	server_velx_ += acceleration * cosf(w_) * timedelta;
+	server_vely_ += acceleration * sinf(w_) * timedelta;
 #else
 	velocity_x_ += acceleration * cosf(w_) * timedelta;
 	velocity_y_ += acceleration * sinf(w_) * timedelta;
