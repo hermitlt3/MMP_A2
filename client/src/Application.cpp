@@ -261,6 +261,7 @@ bool Application::Update()
 				unsigned int shipid;
 				float temp;
 				float x,y,w;
+				float velocity_x, velocity_y, angular_velocity;
 				bs.Read(shipid);
 				for (ShipList::iterator itr = ships_.begin(); itr != ships_.end(); ++itr)
 				{
@@ -295,7 +296,10 @@ bool Application::Update()
 
 						// Lab 13 Task 1 : Read Extrapolation Data velocity x, velocity y & angular velocity
 	#ifdef EXTRAPOLATEMOVEMENT
-						
+						bs.Read(velocity_x);
+						bs.Read(velocity_y);
+						bs.Read(angular_velocity);
+						(*itr)->setLocation(velocity_x, velocity_y, angular_velocity);
 	#endif
 #endif
 
@@ -368,7 +372,10 @@ bool Application::Update()
 		bs2.Write(ships_.at(0)->GetW());
 		// Lab 13 Task 1 : Add Extrapolation Data velocity x, velocity y & angular velocity
 	#ifdef EXTRAPOLATEMOVEMENT
-		
+		bs2.Write(ships_.at(0)->GetVelocityX());
+		bs2.Write(ships_.at(0)->GetVelocityY());
+		bs2.Write(ships_.at(0)->GetAngularVelocity());
+	
 	#endif
 #endif
 

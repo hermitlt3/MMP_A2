@@ -10,7 +10,7 @@ class hgeSprite;
 class hgeFont;
 
 //#define INTERPOLATEMOVEMENT 
-//#define EXTRAPOLATEMOVEMENT
+#define EXTRAPOLATEMOVEMENT
 
 /**
 * The Ship class represents a single spaceship floating in space. It obeys
