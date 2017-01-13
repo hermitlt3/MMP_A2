@@ -2,7 +2,7 @@
 *.slo
 *.lo
 *.o
-*.obj
+*.sdf
 
 # Precompiled Headers
 *.gch
@@ -10,8 +10,8 @@
 
 # Compiled Dynamic libraries
 *.so
+#.lib
 *.dylib
-*.dll
 
 # Fortran module files
 *.mod
@@ -21,9 +21,21 @@
 *.lai
 *.la
 *.a
-*.lib
 
 # Executables
 *.exe
 *.out
 *.app
+
+*.opensdf
+*.suo
+*.tlog
+*.log
+*.lastbuildstate
+*.idb
+*.pdb
+
+Common/Debug
+Base/Debug
+Common/Release
+Base/Release
