@@ -271,22 +271,25 @@ bool Application::Update()
 #ifdef INTERPOLATEMOVEMENT
 						// Step 8 : Instead of updating to SetLocation(), use SetServerLocation()
 						// do bitstreams read for x, y, w
-						
+						bs.Read(x);
+						bs.Read(y);
+						bs.Read(w);
 						// call SetServerLocation() for this ship
-	
+						(*itr)->SetServerLocation(x, y, w);
 						// do a bitstream read to float temp
-					
+						bs.Read(temp);
 						// call SetServerVelocityX()
-						
+						(*itr)->SetServerVelocityX(x);
 						// do a bitstream read to float temp
-						
+						bs.Read(temp);
 						// call SetServerVelocityX()
-					
+						(*itr)->SetServerVelocityY(y);
 						// do a bitstream read to float temp
-					
+						bs.Read(temp);
 						// call SetAngularVelocity()
-					
+						(*itr)->SetAngularVelocity(w);
 						// call DoInterpolateUpdate()
+						(*itr)->DoInterpolateUpdate();
 
 #else
 						bs.Read(x);
@@ -299,7 +302,9 @@ bool Application::Update()
 						bs.Read(velocity_x);
 						bs.Read(velocity_y);
 						bs.Read(angular_velocity);
-						(*itr)->setLocation(velocity_x, velocity_y, angular_velocity);
+						(*itr)->SetVelocityX(velocity_x);
+						(*itr)->SetVelocityY(velocity_y);
+						(*itr)->SetAngularVelocity(angular_velocity);
 	#endif
 #endif
 
@@ -329,7 +334,10 @@ bool Application::Update()
 					// Lab 13 Task 3 : Collision update for Interpolation
 #ifdef INTERPOLATEMOVEMENT
 					// Step 12 : Read and update SetServerVelocityX() and SetServerVelocityY()
-			
+					bs.Read(x);
+					bs.Read(y);
+					ships_.at(0)->SetServerVelocityX(x);
+					ships_.at(0)->SetServerVelocityY(y);
 #endif	
 				}
 			}
@@ -352,19 +360,19 @@ bool Application::Update()
 		// Lab 13 Task 2 : Interpolation
 #ifdef INTERPOLATEMOVEMENT
 		// step 9 : Instead of sending x,y,w ..... , send the server version instead
-	
+		bs2.Write(ships_.at(0)->GetID());
 		// do bitstream write for GetServerX()
-		
+		bs2.Write(ships_.at(0)->GetServerX());
 		// do bitstream write for GetServerY()
-		
+		bs2.Write(ships_.at(0)->GetServerY());
 		// do bitstream write for GetServerW()
-		
+		bs2.Write(ships_.at(0)->GetServerW());
 		// do bitstream write for GetServerVelocityX()
-
+		bs2.Write(ships_.at(0)->GetServerVelocityX());
 		// do bitstream write for GetServerVelocityY()
-
+		bs2.Write(ships_.at(0)->GetServerVelocityY());
 		// do bitstream write for GetAngularVelocity()
-
+		bs2.Write(ships_.at(0)->GetAngularVelocity());
 #else
 		bs2.Write(ships_.at(0)->GetID());
 		bs2.Write(ships_.at(0)->GetX());
@@ -476,7 +484,69 @@ bool Application::checkCollisions(Ship* ship)
 			// Lab 13 Task 3 : Collision update for Interpolation
 #ifdef INTERPOLATEMOVEMENT
 			// step 10 : Besides updating SetVelocityY() and SetVelocityX(), you need to update SetServerVelocityY() and SetServerVelocityX() as well
-			
+				if (GetAbsoluteMag(ship->GetServerVelocityY()) > GetAbsoluteMag((*thisship)->GetServerVelocityY()))
+				{
+					// this transfers vel to thisship
+					(*thisship)->SetVelocityY( (*thisship)->GetVelocityY() + ship->GetVelocityY()/3 );
+					ship->SetVelocityY( - ship->GetVelocityY() );
+					
+					(*thisship)->SetServerVelocityY((*thisship)->GetVelocityY());
+					ship->SetServerVelocityY(ship->GetVelocityY());
+				}
+				else
+				{
+					ship->SetVelocityY(ship->GetVelocityY() + (*thisship)->GetVelocityY() / 3);
+					(*thisship)->SetVelocityY(-(*thisship)->GetVelocityY() / 2);
+					
+					ship->SetServerVelocityY(ship->GetVelocityY());
+					(*thisship)->SetServerVelocityY((*thisship)->GetVelocityY());
+				}
+
+				if (GetAbsoluteMag(ship->GetServerVelocityX()) > GetAbsoluteMag((*thisship)->GetServerVelocityX()))
+				{
+					// this transfers vel to thisship
+					(*thisship)->SetVelocityX((*thisship)->GetVelocityX() + ship->GetVelocityX() / 3);
+					ship->SetVelocityX(-ship->GetVelocityX());
+					
+					(*thisship)->SetServerVelocityX((*thisship)->GetVelocityX());
+					ship->SetServerVelocityX(ship->GetVelocityX());
+				}
+				else
+				{
+					// ship transfers vel to asteroid
+					ship->SetVelocityX(ship->GetVelocityX() + (*thisship)->GetVelocityX() / 3);
+					(*thisship)->SetVelocityX(-(*thisship)->GetVelocityX() / 2);
+					
+					ship->SetServerVelocityX(ship->GetVelocityX());
+					(*thisship)->SetServerVelocityX((*thisship)->GetVelocityX());
+				}
+
+				/*if (GetAbsoluteMag(ship->GetServerVelocityY()) > GetAbsoluteMag((*thisship)->GetServerVelocityY()))
+				{
+					// this transfers vel to thisship
+					(*thisship)->SetServerVelocityY((*thisship)->GetServerVelocityY() + ship->GetServerVelocityY() / 3);
+					ship->SetServerVelocityY(-ship->GetServerVelocityY());
+				}
+				else
+				{
+					ship->SetServerVelocityY(ship->GetServerVelocityY() + (*thisship)->GetServerVelocityY() / 3);
+					(*thisship)->SetServerVelocityY(-(*thisship)->GetServerVelocityY() / 2);
+				}
+
+				if (GetAbsoluteMag(ship->GetServerVelocityX()) > GetAbsoluteMag((*thisship)->GetServerVelocityX()))
+				{
+					// this transfers vel to thisship
+					(*thisship)->SetServerVelocityX((*thisship)->GetServerVelocityX() + ship->GetServerVelocityX() / 3);
+					ship->SetServerVelocityX(-ship->GetServerVelocityX());
+				}
+				else
+				{
+					// ship transfers vel to asteroid
+					ship->SetServerVelocityX(ship->GetServerVelocityX() + (*thisship)->GetServerVelocityX() / 3);
+					(*thisship)->SetServerVelocityX(-(*thisship)->GetServerVelocityX() / 2);
+				}*/
+				ship->SetPreviousLocation();
+		
 #else
 			if( GetAbsoluteMag( ship->GetVelocityY() ) > GetAbsoluteMag( (*thisship)->GetVelocityY() ) )
 			{
@@ -534,7 +604,8 @@ void Application::SendCollision( Ship* ship )
 	// Lab 13 Task 3 : Collision update for Interpolation
 #ifdef INTERPOLATEMOVEMENT
 	// step 11 : Send the ServerVelocityX and ServerVelocityY
-
+	bs.Write(ship->GetServerVelocityX());
+	bs.Write(ship->GetServerVelocityY());
 #endif
 
 	rakpeer_->Send(&bs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, UNASSIGNED_SYSTEM_ADDRESS, true);

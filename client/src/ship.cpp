@@ -173,7 +173,8 @@ void Ship::Update(float timedelta)
 		ratio_ += timedelta * 4;
 		if (ratio_ > 1)
 			ratio_ = 1;
-	}
+	}
+
 #else
 	x_ += velocity_x_ * timedelta;
 	y_ += velocity_y_ * timedelta;
